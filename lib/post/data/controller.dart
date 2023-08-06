@@ -4,7 +4,7 @@ import 'package:e1547/post/post.dart';
 import 'package:flutter/foundation.dart';
 
 class PostsController extends PageClientDataController<Post>
-    with PostsActionController, PostFilterableController {
+    with StreamableClientDataController, PostFilterableController {
   PostsController({
     required this.client,
     QueryMap? query,
@@ -56,8 +56,7 @@ class PostsController extends PageClientDataController<Post>
   }
 
   @override
-  @protected
-  Future<List<Post>> fetch(int page, bool force) async => client.posts(
+  StreamFuture<List<Post>> stream(int page, bool force) => client.posts(
         page: page,
         query: query,
         force: force,
@@ -83,14 +82,16 @@ class SinglePostController extends PostsController {
   final int id;
 
   @override
-  Future<List<Post>> fetch(int page, bool force) async => [
-        if (page == firstPageKey)
-          await client.post(
-            id,
-            force: force,
-            cancelToken: cancelToken,
-          ),
-      ];
+  StreamFuture<List<Post>> stream(int page, bool force) {
+    if (page == firstPageKey) {
+      return client
+          .post(id, force: force, cancelToken: cancelToken)
+          .stream
+          .map((e) => [e])
+          .future;
+    }
+    return StreamFuture.value(<Post>[]);
+  }
 }
 
 class PostsProvider extends SubChangeNotifierProvider<Client, PostsController> {

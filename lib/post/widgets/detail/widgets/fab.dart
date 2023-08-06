@@ -19,7 +19,7 @@ class PostDetailFloatingActionButton extends StatelessWidget {
       Map<String, String?>? body = editingController.value?.toForm();
       if (body != null) {
         try {
-          await context.read<PostsController>().updatePost(post, body);
+          await context.read<Client>().updatePost(post.id, body);
           editingController.stopEditing();
         } on ClientException {
           editingController.setLoading(false);

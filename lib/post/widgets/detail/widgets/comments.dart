@@ -111,16 +111,11 @@ class PostDetailCommentsWrapper extends StatelessWidget {
                                 value: () => guardWithLogin(
                                   context: context,
                                   callback: () async {
-                                    PostsController postsController =
-                                        context.read<PostsController>();
                                     bool success = await writeComment(
-                                        context: context, postId: post.id);
+                                      context: context,
+                                      postId: post.id,
+                                    );
                                     if (success) {
-                                      postsController.replacePost(
-                                        post.copyWith(
-                                          commentCount: post.commentCount + 1,
-                                        ),
-                                      );
                                       controller.refresh(force: true);
                                     }
                                   },

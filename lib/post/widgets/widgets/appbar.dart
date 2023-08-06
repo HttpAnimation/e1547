@@ -51,15 +51,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
       icon: Icons.comment,
       value: () => guardWithLogin(
         context: context,
-        callback: () async {
-          PostsController controller = context.read<PostsController>();
-          bool success = await writeComment(context: context, postId: post.id);
-          if (success) {
-            controller.replacePost(
-              post.copyWith(commentCount: post.commentCount + 1),
-            );
-          }
-        },
+        callback: () => writeComment(context: context, postId: post.id),
         error: 'You must be logged in to comment!',
       ),
     ),

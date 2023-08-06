@@ -1,4 +1,5 @@
 import 'package:e1547/follow/follow.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 
 class FollowTimelineController extends PostsController {
@@ -10,14 +11,18 @@ class FollowTimelineController extends PostsController {
   final FollowsService follows;
 
   @override
-  Future<List<Post>> fetch(int page, bool force) async {
-    return client.postsByTags(
-      await (follows.all(
-        types: [FollowType.update, FollowType.notify],
-      ).then((e) => e.map((e) => e.tags).toList())),
-      page,
-      force: force,
-      cancelToken: cancelToken,
+  StreamFuture<List<Post>> stream(int page, bool force) {
+    return StreamFuture.resolve(
+      () async => client
+          .postsByTags(
+            await (follows.all(
+              types: [FollowType.update, FollowType.notify],
+            ).then((e) => e.map((e) => e.tags).toList())),
+            page,
+            force: force,
+            cancelToken: cancelToken,
+          )
+          .asStream(),
     );
   }
 }

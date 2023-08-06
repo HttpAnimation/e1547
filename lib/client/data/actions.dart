@@ -48,6 +48,11 @@ class NoUserLoginException implements Exception {
   String toString() => 'NoUserLoginException';
 }
 
+extension IsForceRefresh on RequestOptions {
+  bool get isForceRefresh =>
+      ClientCacheConfig.fromExtra(this)?.policy == CachePolicy.refresh;
+}
+
 String? findFavicon(String html) {
   final headRegExp =
       RegExp(r'<head>.*?</head>', dotAll: true, caseSensitive: false);

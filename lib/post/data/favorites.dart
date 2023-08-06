@@ -18,7 +18,7 @@ class FavoritePostsController extends PostsController {
 
   @override
   @protected
-  Future<List<Post>> fetch(int page, bool force) async {
+  StreamFuture<List<Post>> stream(int page, bool force) {
     return client.favorites(
       page: page,
       query: query,

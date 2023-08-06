@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
 import 'package:e1547/interface/interface.dart';
-import 'package:flutter/material.dart';
 
 class CommentsController extends PageClientDataController<Comment> {
   CommentsController({
@@ -26,18 +25,15 @@ class CommentsController extends PageClientDataController<Comment> {
   }
 
   @override
-  @protected
-  Future<List<Comment>> fetch(
-    int page,
-    bool force,
-  ) =>
-      client.commentsByPost(
-        id: postId,
-        page: page,
-        force: force,
-        cancelToken: cancelToken,
-        ascending: orderByOldest,
-      );
+  Future<List<Comment>> fetch(int page, bool force) {
+    return client.commentsByPost(
+      id: postId,
+      page: page,
+      force: force,
+      cancelToken: cancelToken,
+      ascending: orderByOldest,
+    );
+  }
 
   @override
   List<Comment>? filter(List<Comment>? items) => super.filter(items

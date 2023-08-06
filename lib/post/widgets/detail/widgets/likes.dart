@@ -21,14 +21,14 @@ class LikeDisplay extends StatelessWidget {
               status: post.vote.status,
               score: post.vote.score,
               onUpvote: (isLiked) async {
-                PostsController controller = context.read<PostsController>();
+                Client client = context.read<Client>();
                 ScaffoldMessengerState messenger =
                     ScaffoldMessenger.of(context);
-                if (context.read<Client>().hasLogin) {
-                  controller
-                      .vote(post: post, upvote: true, replace: !isLiked)
-                      .then((value) {
-                    if (!value) {
+                if (client.hasLogin) {
+                  Future(() async {
+                    try {
+                      await client.votePost(post.id, true, !isLiked);
+                    } on ClientException {
                       messenger.showSnackBar(SnackBar(
                         duration: const Duration(seconds: 1),
                         content: Text('Failed to upvote Post #${post.id}'),
@@ -41,14 +41,14 @@ class LikeDisplay extends StatelessWidget {
                 }
               },
               onDownvote: (isLiked) async {
-                PostsController controller = context.read<PostsController>();
+                Client client = context.read<Client>();
                 ScaffoldMessengerState messenger =
                     ScaffoldMessenger.of(context);
-                if (context.read<Client>().hasLogin) {
-                  controller
-                      .vote(post: post, upvote: false, replace: !isLiked)
-                      .then((value) {
-                    if (!value) {
+                if (client.hasLogin) {
+                  Future(() async {
+                    try {
+                      await client.votePost(post.id, false, !isLiked);
+                    } on ClientException {
                       messenger.showSnackBar(SnackBar(
                         duration: const Duration(seconds: 1),
                         content: Text('Failed to downvote Post #${post.id}'),
@@ -100,11 +100,13 @@ class FavoriteButton extends StatelessWidget {
           color: isLiked ? Colors.pinkAccent : IconTheme.of(context).color,
         ),
         onTap: (isLiked) async {
-          PostsController controller = context.read<PostsController>();
+          Client client = context.read<Client>();
           ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
           if (isLiked) {
-            controller.unfav(post).then((value) {
-              if (!value) {
+            Future(() async {
+              try {
+                await client.removeFavorite(post.id);
+              } on ClientException {
                 messenger.showSnackBar(
                   SnackBar(
                     duration: const Duration(seconds: 1),
@@ -117,16 +119,13 @@ class FavoriteButton extends StatelessWidget {
             return false;
           } else {
             bool upvote = context.read<Settings>().upvoteFavs.value;
-            controller.fav(post).then((value) {
-              if (value) {
+            Future(() async {
+              try {
+                await client.addFavorite(post.id);
                 if (upvote) {
-                  controller.vote(
-                    post: controller.postById(post.id)!,
-                    upvote: true,
-                    replace: true,
-                  );
+                  await client.votePost(post.id, true, true);
                 }
-              } else {
+              } on ClientException {
                 messenger.showSnackBar(
                   SnackBar(
                     duration: const Duration(seconds: 1),

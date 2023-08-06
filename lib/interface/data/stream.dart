@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:async/async.dart';
 
 /// A [Future] that wraps a [Stream].
@@ -17,7 +19,25 @@ class StreamFuture<T> extends DelegatingFuture<T> {
   }
 
   /// Creates a [StreamFuture] that completes with [value].
+  ///
+  /// Mirrors both `Stream.value` and `Future.value`.
   factory StreamFuture.value(T value) => StreamFuture(Stream<T>.value(value));
+
+  /// Creates a [StreamFuture] from a [future] that completes with a [Stream].
+  ///
+  /// This is useful for situations where a Stream
+  /// depends on a one-time Future for its creation.
+  factory StreamFuture.resolve(Future<Stream<T>> Function() future) {
+    final controller = StreamController<T>.broadcast();
+    future().then((stream) {
+      stream.listen(
+        controller.add,
+        onError: controller.addError,
+        onDone: controller.close,
+      );
+    });
+    return controller.stream.future;
+  }
 
   StreamFuture._(Stream<T> stream)
       : assert(
@@ -30,6 +50,9 @@ class StreamFuture<T> extends DelegatingFuture<T> {
   final Stream<T> _stream;
 
   Stream<T> get stream => _stream;
+
+  StreamFuture<T2> map<T2>(T2 Function(T value) mapper) =>
+      StreamFuture(stream.map(mapper));
 }
 
 /// An extension on [Stream] to easily create a [StreamFuture].

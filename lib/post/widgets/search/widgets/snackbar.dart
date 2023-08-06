@@ -1,3 +1,4 @@
+import 'package:e1547/client/client.dart';
 import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
 import 'package:e1547/post/post.dart';
@@ -46,10 +47,9 @@ Future<void> postDownloadingNotification(
 Future<void> postFavoritingNotification(
   BuildContext context,
   Set<Post> items,
-  PostsController controller,
   bool isLiked,
 ) {
-  PostsController controller = context.read<PostsController>();
+  Client client = context.read<Client>();
   bool upvote = context.read<Settings>().upvoteFavs.value;
   return loadingNotification<Post>(
     context: context,
@@ -59,27 +59,23 @@ Future<void> postFavoritingNotification(
     process: (post) async {
       if (isLiked) {
         if (post.isFavorited) {
-          return controller.unfav(post);
-        } else {
-          return true;
+          try {
+            await client.removeFavorite(post.id);
+          } on ClientException {
+            return false;
+          }
         }
       } else {
-        if (!post.isFavorited) {
-          return Future<bool>(() async {
-            bool result = await controller.fav(post);
-            if (result && upvote) {
-              result = await controller.vote(
-                post: controller.postById(post.id)!,
-                upvote: true,
-                replace: true,
-              );
-            }
-            return result;
-          });
-        } else {
-          return true;
+        try {
+          await client.addFavorite(post.id);
+          if (upvote) {
+            await client.votePost(post.id, true, true);
+          }
+        } on ClientException {
+          return false;
         }
       }
+      return true;
     },
     onDone: isLiked
         ? (items) => items.length == 1

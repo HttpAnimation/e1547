@@ -77,9 +77,9 @@ class ThumbnailController extends PostsController {
 
   @override
   @protected
-  Future<List<Post>> fetch(int page, bool force) async {
+  StreamFuture<List<Post>> stream(int page, bool force) {
     List<int>? ids = _ids[page];
-    if (ids == null) return [];
+    if (ids == null) return StreamFuture.value([]);
     List<int> available = rawItems?.map((e) => e.id).toList() ?? [];
     ids.removeWhere(available.contains);
     return client.postsByIds(
@@ -104,11 +104,14 @@ class PoolController extends PostsController {
 
   @override
   @protected
-  Future<List<Post>> fetch(int page, bool force) async => client.postsByPool(
+  StreamFuture<List<Post>> stream(int page, bool force) => client
+      .postsByPool(
         id: id,
         page: page,
         orderByOldest: orderPools,
         force: force,
         cancelToken: cancelToken,
-      );
+      )
+      .asStream()
+      .future;
 }

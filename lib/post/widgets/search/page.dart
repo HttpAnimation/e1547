@@ -63,7 +63,6 @@ class _PostsPageState extends State<PostsPage> {
           items: controller.items,
           child: RefreshableDataPage.builder(
             appBar: PostSelectionAppBar(
-              controller: widget.controller,
               child: widget.appBar,
             ),
             drawer: const RouterDrawer(),
